@@ -4,8 +4,8 @@
 2.  Aplicar a pasta venv python -m venv venv
 3.  Entrar em -> /venv/Scripts/activate.bat
 4.  Instalar o Django -> pip install Django==5.0.3
-5.  Criando o projeto -> Django-admin startproject setup .
-6.  Começar o projeto -> python manage.py startapp mecanica
+5.  Criando o projeto -> django-admin startproject setup .
+6.  Começar o projeto -> python manage.py startapp autopecas
 7.  Na pasta setup, no arquivo setting.py ir em aplicativos instalados colocar o nome do projeto 'autopecas'
 8.  language = pt-br,  UTC = America/Sao_Paulo
 
@@ -72,5 +72,79 @@ rodar python manage.py runserver
 3.  Fazer as migrations -> python manage.py makemigrations
 4.  Migrar -> python manage.py migrate 
 
-                            
 
+#   Criar admin
+
+1.  Fazer import das models -> from autopecas.models import Categoria, Produto
+2.  Criar classe Categorias -> class Categorias(admin.ModelAdmin):
+                                    list_display = ('id', 'nome')
+                                    list_display_links = ('id')
+                                    list_per_page = 20 # quantidade de categorias por pagina
+                                    search_fields = ('nome',)
+
+                                admin.site.register(Categoria, Categorias)
+
+classe de Produtos
+                                class Produtos(admin.ModelAdmin):
+                                    list_display = ('id', 'nome', 'preco', 'quantidade', 'descricao', 'nivel')
+                                    list_display_links = ('id', 'nome')
+                                    search_fields = ('nome',)
+
+                                admin.site.register(Produto,Produtos)
+
+
+*   criar superusuario 
+
+-> python manage.py createsuperuser
+
+#   Iniciando Serializer
+
+1.  Criar um arquivo serializer.py dentro do app autopecas
+
+2.  No arquivo importar -> from rest_framework import serializer
+3.  Importar ->from autopecas.models import Categoria, Produto
+
+4.  Criar classes serializers :
+
+    class CategoriaSerializer(serializers.ModelSerializer):
+        class Meta:
+            model = Categoria
+            fields = ['id', 'nome']
+        
+
+    class ProdutoSerializer(serializers.ModelSerializer):
+        class Meta:
+            model = Produto
+            fields = ['id', 'nome', 'preco', 'quantidade', 'descricao', 'nivel']
+
+#   Construindo as viewsets
+
+1.  No arquivo views.py importar ->  from autopecas.models import Categoria, Produto
+                                ->  from autopecas.serializer import CategoriaSerializer,ProdutoSerializer
+                                ->  from rest_framework import viewsets
+
+2.  Fazer as classes 
+
+CategoriaViewSet e ProdutoViewSet
+
+from autopecas.models import Categoria, Produto
+from autopecas.serializer import CategoriaSerializer, ProdutoSerializer
+from rest_framework import viewsets
+
+class CategoriaViewSet(viewsets.ModelViewSet):
+    queryset = Categoria.objects.all()
+    serializer_class = CategoriaSerializer
+
+class ProdutoViewSet(viewsets.ModelViewSet):
+    queryset = Produto.objects.all()
+    serializer_class = ProdutoSerializer
+
+#   DefaultRouter
+
+1.  Importar -> from rest_framework import routers
+2.  Importar as viewsets, categoria e produto.
+3.  criar o objeto router :
+    router = routers.DefaultRouter()
+    router.register('categorias', CategoriaViewSet, basename = 'Categorias')
+    router.register('produtos', ProdutoViewSet, basename = 'Produtos')
+    
